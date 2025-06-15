@@ -71,7 +71,7 @@ const Landing = () => {
               </div>
             </div>
 
-            {/* Right Content - Custom 3D Mug Model */}
+            {/* Right Content - Enhanced 3D Mug Model */}
             <div className="relative">
               <div className="bg-white rounded-2xl shadow-2xl p-4">
                 <div className="w-full h-96 rounded-lg overflow-hidden">
@@ -79,6 +79,9 @@ const Landing = () => {
                 </div>
                 <div className="absolute -top-4 -right-4 bg-yellow-400 text-black px-4 py-2 rounded-full font-bold transform rotate-12">
                   Starting at ₹300
+                </div>
+                <div className="absolute -bottom-2 -left-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  Premium Quality
                 </div>
               </div>
             </div>

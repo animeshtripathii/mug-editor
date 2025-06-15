@@ -1,5 +1,5 @@
-import React from "react";
-import { MousePointer, Move, ZoomIn, ZoomOut } from "lucide-react";
+import React, { useState } from "react";
+import { MousePointer, Move, ZoomIn, ZoomOut, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DesignElement } from "../../pages/DesignEditor";
 import { TextEditor } from "./editors/TextEditor";
@@ -21,6 +21,8 @@ export const DesignToolbar: React.FC<Props> = ({
   deleteElement, 
   duplicateElement 
 }) => {
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
+
   if (!selectedElement) {
     return (
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0">
@@ -64,37 +66,105 @@ export const DesignToolbar: React.FC<Props> = ({
   };
 
   return (
-    <div className="bg-white border-b border-gray-200 flex-shrink-0 max-h-64 overflow-y-auto">
-      {/* Header */}
+    <div className="bg-white border-b border-gray-200 flex-shrink-0">
+      {/* Header with Quick Actions */}
       <div className="px-6 py-3 border-b border-gray-100 bg-gray-50">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium text-gray-900 capitalize">
             {selectedElement.type} Editor
           </h3>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" className="h-7">
-              <ZoomIn className="w-3 h-3" />
+          
+          {/* Quick Action Buttons - Similar to your screenshot */}
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="outline" className="h-8 px-3">
+              Replace
             </Button>
-            <Button size="sm" variant="outline" className="h-7">
-              <ZoomOut className="w-3 h-3" />
+            <Button size="sm" variant="outline" className="h-8 px-3">
+              Crop
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 px-3">
+              Remove BG
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 px-3">
+              Sharpen
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 px-3">
+              Adjust
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 px-3">
+              Effects
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 px-3">
+              Flip
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 px-3">
+              Rotate
+            </Button>
+            
+            {/* More Options Button */}
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="h-8 px-2"
+              onClick={() => setShowMoreOptions(!showMoreOptions)}
+            >
+              <MoreHorizontal className="w-4 h-4" />
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Editor Content - Horizontal Layout */}
-      <div className="p-4">
-        <div className="flex gap-6 overflow-x-auto">
-          <div className="flex-shrink-0 min-w-80">
-            {renderEditor()}
+      {/* Expandable Options Panel */}
+      {showMoreOptions && (
+        <div className="border-b border-gray-200 bg-gray-50">
+          <div className="px-6 py-4">
+            <div className="flex gap-6 overflow-x-auto">
+              <div className="flex-shrink-0 min-w-80">
+                {renderEditor()}
+              </div>
+              <div className="flex-shrink-0 min-w-64">
+                <CommonActions
+                  selectedElement={selectedElement}
+                  updateElement={updateElement}
+                  deleteElement={deleteElement}
+                  duplicateElement={duplicateElement}
+                />
+              </div>
+            </div>
           </div>
-          <div className="flex-shrink-0 min-w-64">
-            <CommonActions
-              selectedElement={selectedElement}
-              updateElement={updateElement}
-              deleteElement={deleteElement}
-              duplicateElement={duplicateElement}
-            />
+        </div>
+      )}
+
+      {/* Position and Alignment Controls */}
+      <div className="px-6 py-2 bg-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">Position:</span>
+              <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">
+                X: {Math.round(selectedElement.x)} Y: {Math.round(selectedElement.y)}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">Size:</span>
+              <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">
+                W: {Math.round(selectedElement.width)} H: {Math.round(selectedElement.height)}
+              </span>
+            </div>
+          </div>
+          
+          {/* Alignment Controls */}
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="outline" className="h-7 w-7 p-0" title="Center">
+              <div className="w-3 h-3 border border-gray-400 flex items-center justify-center">
+                <div className="w-1 h-1 bg-gray-400"></div>
+              </div>
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 w-7 p-0" title="Middle">
+              <div className="w-3 h-3 border border-gray-400 flex items-center justify-center">
+                <div className="w-3 h-px bg-gray-400"></div>
+              </div>
+            </Button>
           </div>
         </div>
       </div>

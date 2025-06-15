@@ -7,8 +7,8 @@ interface Advanced3DPreviewProps {
   backgroundColor: string;
   canvasWidth?: number;
   canvasHeight?: number;
-  modelType?: 'procedural' | 'gltf'; // Future extensibility
-  modelPath?: string; // For future .glb/.gltf files
+  modelType?: 'procedural' | 'gltf';
+  modelPath?: string;
 }
 
 export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
@@ -27,10 +27,10 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
   const textureRef = useRef<THREE.Texture | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Create texture from canvas elements
+  // Create texture from canvas elements with real QR codes
   const createDesignTexture = () => {
     const canvas = document.createElement('canvas');
-    canvas.width = 1024; // High resolution for better quality
+    canvas.width = 1024;
     canvas.height = 1024;
     const ctx = canvas.getContext('2d');
     
@@ -40,7 +40,6 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Scale factor to map from design canvas to texture
     const scaleX = canvas.width / canvasWidth;
     const scaleY = canvas.height / canvasHeight;
 
@@ -48,7 +47,6 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
     elements.forEach(element => {
       ctx.save();
       
-      // Apply transformations
       const centerX = (element.x + element.width / 2) * scaleX;
       const centerY = (element.y + element.height / 2) * scaleY;
       
@@ -85,7 +83,6 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
             img.onload = () => {
               ctx.globalAlpha = element.opacity || 1;
               ctx.drawImage(img, -scaledWidth/2, -scaledHeight/2, scaledWidth, scaledHeight);
-              // Update texture after image loads
               if (textureRef.current) {
                 textureRef.current.needsUpdate = true;
               }
@@ -112,26 +109,21 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
           break;
 
         case 'qr':
-          // Simple QR code representation
-          ctx.fillStyle = element.backgroundColor || '#ffffff';
-          ctx.fillRect(-scaledWidth/2, -scaledHeight/2, scaledWidth, scaledHeight);
-          ctx.fillStyle = element.color || '#000000';
+          // Use real QR code API
+          const qrSize = Math.min(scaledWidth, scaledHeight);
+          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${Math.round(qrSize)}x${Math.round(qrSize)}&data=${encodeURIComponent(element.content || 'https://example.com')}`;
           
-          // Draw QR pattern
-          const qrSize = 8;
-          const moduleSize = scaledWidth / qrSize;
-          for (let i = 0; i < qrSize; i++) {
-            for (let j = 0; j < qrSize; j++) {
-              if ((i + j) % 2 === 0) {
-                ctx.fillRect(
-                  -scaledWidth/2 + j * moduleSize,
-                  -scaledHeight/2 + i * moduleSize,
-                  moduleSize,
-                  moduleSize
-                );
-              }
+          const qrImg = new Image();
+          qrImg.crossOrigin = 'anonymous';
+          qrImg.onload = () => {
+            ctx.fillStyle = element.backgroundColor || '#ffffff';
+            ctx.fillRect(-scaledWidth/2, -scaledHeight/2, scaledWidth, scaledHeight);
+            ctx.drawImage(qrImg, -qrSize/2, -qrSize/2, qrSize, qrSize);
+            if (textureRef.current) {
+              textureRef.current.needsUpdate = true;
             }
-          }
+          };
+          qrImg.src = qrUrl;
           break;
       }
       
@@ -141,31 +133,31 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
     return new THREE.CanvasTexture(canvas);
   };
 
-  // Create procedural mug geometry
+  // Enhanced procedural mug creation
   const createProceduralMug = () => {
     const group = new THREE.Group();
 
-    // Mug body with UV mapping for texture
+    // Enhanced mug body
     const mugProfile = [];
-    const segments = 32;
+    const segments = 48;
     
     for (let i = 0; i <= segments; i++) {
       const t = i / segments;
-      const y = t * 3 - 1.5;
+      const y = t * 3.5 - 1.75;
       
       let radius;
-      if (t < 0.1) {
-        radius = 0.8 + (t * 2);
-      } else if (t > 0.9) {
-        radius = 1.1 + (t - 0.9) * 0.2;
+      if (t < 0.05) {
+        radius = 0.7 + (t * 6);
+      } else if (t > 0.92) {
+        radius = 1.15 + (t - 0.92) * 0.8;
       } else {
-        radius = 1.0 + Math.sin(t * Math.PI) * 0.1;
+        radius = 1.0 + Math.sin(t * Math.PI * 0.8) * 0.08;
       }
       
       mugProfile.push(new THREE.Vector2(radius, y));
     }
 
-    const bodyGeometry = new THREE.LatheGeometry(mugProfile, 32);
+    const bodyGeometry = new THREE.LatheGeometry(mugProfile, 64);
     
     // Create texture from design elements
     const designTexture = createDesignTexture();
@@ -178,8 +170,8 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
 
     const bodyMaterial = new THREE.MeshPhongMaterial({ 
       color: 0xffffff,
-      shininess: 60,
-      specular: 0x222222,
+      shininess: 80,
+      specular: 0x444444,
       map: designTexture
     });
     
@@ -188,20 +180,21 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
     body.receiveShadow = true;
     group.add(body);
 
-    // Handle
+    // Enhanced handle
     const handleCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(1.2, 0.8, 0),
-      new THREE.Vector3(1.6, 0.6, 0),
-      new THREE.Vector3(1.7, 0, 0),
-      new THREE.Vector3(1.6, -0.6, 0),
-      new THREE.Vector3(1.2, -0.8, 0)
+      new THREE.Vector3(1.25, 1.0, 0),
+      new THREE.Vector3(1.7, 0.8, 0),
+      new THREE.Vector3(1.85, 0.2, 0),
+      new THREE.Vector3(1.85, -0.2, 0),
+      new THREE.Vector3(1.7, -0.8, 0),
+      new THREE.Vector3(1.25, -1.0, 0)
     ]);
 
-    const handleGeometry = new THREE.TubeGeometry(handleCurve, 20, 0.08, 8, false);
+    const handleGeometry = new THREE.TubeGeometry(handleCurve, 32, 0.09, 12, false);
     const handleMaterial = new THREE.MeshPhongMaterial({ 
       color: 0xffffff,
-      shininess: 60,
-      specular: 0x222222
+      shininess: 80,
+      specular: 0x444444
     });
     const handle = new THREE.Mesh(handleGeometry, handleMaterial);
     handle.castShadow = true;
@@ -209,12 +202,12 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
 
     // Inner cavity
     const innerProfile = mugProfile.map(point => 
-      new THREE.Vector2(Math.max(0.1, point.x - 0.1), point.y + 0.1)
+      new THREE.Vector2(Math.max(0.1, point.x - 0.12), point.y + 0.08)
     );
     const innerGeometry = new THREE.LatheGeometry(innerProfile, 32);
     const innerMaterial = new THREE.MeshPhongMaterial({ 
-      color: 0x2c3e50,
-      shininess: 80,
+      color: 0x1a1a1a,
+      shininess: 100,
       side: THREE.BackSide
     });
     const inner = new THREE.Mesh(innerGeometry, innerMaterial);
@@ -222,13 +215,13 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
     group.add(inner);
 
     // Rim
-    const rimGeometry = new THREE.TorusGeometry(1.15, 0.03, 8, 32);
+    const rimGeometry = new THREE.TorusGeometry(1.2, 0.04, 12, 48);
     const rimMaterial = new THREE.MeshPhongMaterial({ 
       color: 0xe8e8e8,
-      shininess: 100
+      shininess: 120
     });
     const rim = new THREE.Mesh(rimGeometry, rimMaterial);
-    rim.position.y = 1.4;
+    rim.position.y = 1.65;
     rim.castShadow = true;
     group.add(rim);
 
@@ -239,13 +232,10 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
   const loadGLTFModel = async (path: string) => {
     setIsLoading(true);
     try {
-      // This would use GLTFLoader in the future
-      // const loader = new GLTFLoader();
-      // const gltf = await loader.loadAsync(path);
-      // Apply texture to the loaded model
+      // Future implementation with GLTFLoader
       console.log('GLTF loading would be implemented here:', path);
       setIsLoading(false);
-      return createProceduralMug(); // Fallback for now
+      return createProceduralMug();
     } catch (error) {
       console.error('Error loading GLTF model:', error);
       setIsLoading(false);
@@ -263,12 +253,12 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
 
     // Camera
     const camera = new THREE.PerspectiveCamera(
-      45,
+      50,
       mountRef.current.clientWidth / mountRef.current.clientHeight,
       0.1,
       1000
     );
-    camera.position.set(4, 3, 6);
+    camera.position.set(5, 4, 7);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ 
@@ -280,23 +270,23 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.3;
     rendererRef.current = renderer;
     mountRef.current.appendChild(renderer.domElement);
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+    // Enhanced lighting
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    directionalLight.position.set(10, 10, 5);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    directionalLight.position.set(12, 12, 8);
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 2048;
     directionalLight.shadow.mapSize.height = 2048;
     scene.add(directionalLight);
 
-    const rimLight = new THREE.DirectionalLight(0x87ceeb, 0.3);
-    rimLight.position.set(-5, 5, -5);
+    const rimLight = new THREE.DirectionalLight(0x87ceeb, 0.4);
+    rimLight.position.set(-8, 8, -8);
     scene.add(rimLight);
 
     // Create mug based on model type
@@ -315,15 +305,15 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
     });
 
     // Ground plane
-    const planeGeometry = new THREE.PlaneGeometry(20, 20);
+    const planeGeometry = new THREE.PlaneGeometry(25, 25);
     const planeMaterial = new THREE.MeshLambertMaterial({ 
       color: 0xf1f5f9,
       transparent: true,
-      opacity: 0.6
+      opacity: 0.7
     });
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2;
-    plane.position.y = -2;
+    plane.position.y = -2.5;
     plane.receiveShadow = true;
     scene.add(plane);
 
@@ -332,15 +322,15 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
     const animate = () => {
       frameRef.current = requestAnimationFrame(animate);
       
-      time += 0.01;
+      time += 0.008;
       
       if (mugRef.current) {
-        mugRef.current.rotation.y += 0.008;
-        mugRef.current.position.y = Math.sin(time * 2) * 0.05;
+        mugRef.current.rotation.y += 0.006;
+        mugRef.current.position.y = Math.sin(time * 1.5) * 0.03;
       }
       
-      camera.position.x = 4 + Math.sin(time * 0.5) * 0.2;
-      camera.position.y = 3 + Math.cos(time * 0.3) * 0.1;
+      camera.position.x = 5 + Math.sin(time * 0.4) * 0.3;
+      camera.position.y = 4 + Math.cos(time * 0.2) * 0.2;
       if (mugRef.current) {
         camera.lookAt(mugRef.current.position);
       }
@@ -380,7 +370,6 @@ export const Advanced3DPreview: React.FC<Advanced3DPreviewProps> = ({
     if (mugRef.current && textureRef.current) {
       const newTexture = createDesignTexture();
       if (newTexture) {
-        // Update the material with new texture
         mugRef.current.traverse((child) => {
           if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshPhongMaterial) {
             if (child.material.map) {

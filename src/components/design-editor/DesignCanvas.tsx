@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { DesignElement } from "../../pages/DesignEditor";
 
 type Props = {
@@ -24,6 +24,29 @@ export const DesignCanvas: React.FC<Props> = ({
   const [resizeHandle, setResizeHandle] = useState<string | null>(null);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [editingText, setEditingText] = useState<string | null>(null);
+
+  // Add global keyboard event listener for delete key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' && selectedElement && !editingText) {
+        e.preventDefault();
+        deleteElement(selectedElement);
+        setSelectedElement(null);
+      }
+      if (e.key === 'Escape') {
+        setSelectedElement(null);
+        setEditingText(null);
+      }
+    };
+
+    // Add event listener to document
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // Cleanup
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedElement, editingText, deleteElement, setSelectedElement]);
 
   const handleElementClick = (e: React.MouseEvent, elementId: string) => {
     e.preventDefault();
@@ -61,12 +84,6 @@ export const DesignCanvas: React.FC<Props> = ({
       console.log('Canvas clicked - deselecting');
       setSelectedElement(null);
       setEditingText(null);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Delete' && selectedElement && !editingText) {
-      deleteElement(selectedElement);
     }
   };
 
@@ -172,43 +189,13 @@ export const DesignCanvas: React.FC<Props> = ({
     setResizeHandle(null);
   };
 
-  const generateQRCodeSVG = (content: string, size: number = 100) => {
+  // Real QR Code generation using QR Server API
+  const generateRealQRCode = (content: string, size: number = 120) => {
     if (!content) return '';
     
-    const qrSize = 25;
-    const moduleSize = size / qrSize;
-    
-    let svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">`;
-    svg += `<rect width="${size}" height="${size}" fill="white"/>`;
-    
-    const hash = content.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-    
-    const addFinderPattern = (x: number, y: number) => {
-      svg += `<rect x="${x * moduleSize}" y="${y * moduleSize}" width="${7 * moduleSize}" height="${7 * moduleSize}" fill="black"/>`;
-      svg += `<rect x="${(x + 1) * moduleSize}" y="${(y + 1) * moduleSize}" width="${5 * moduleSize}" height="${5 * moduleSize}" fill="white"/>`;
-      svg += `<rect x="${(x + 2) * moduleSize}" y="${(y + 2) * moduleSize}" width="${3 * moduleSize}" height="${3 * moduleSize}" fill="black"/>`;
-    };
-    
-    addFinderPattern(0, 0);
-    addFinderPattern(18, 0);
-    addFinderPattern(0, 18);
-    
-    for (let i = 0; i < qrSize; i++) {
-      for (let j = 0; j < qrSize; j++) {
-        if ((i < 9 && j < 9) || (i < 9 && j > 15) || (i > 15 && j < 9)) continue;
-        
-        const shouldFill = (hash + i * qrSize + j) % 2 === 0;
-        if (shouldFill) {
-          svg += `<rect x="${j * moduleSize}" y="${i * moduleSize}" width="${moduleSize}" height="${moduleSize}" fill="black"/>`;
-        }
-      }
-    }
-    
-    svg += '</svg>';
-    return `data:image/svg+xml;base64,${btoa(svg)}`;
+    // Use QR Server API for real QR code generation
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(content)}`;
+    return qrApiUrl;
   };
 
   const renderSelectionHandles = (elementId: string) => {
@@ -269,7 +256,6 @@ export const DesignCanvas: React.FC<Props> = ({
       top: element.y,
       width: element.width,
       height: element.height,
-      // Combine rotation, flip, and custom transform
       transform: `rotate(${element.rotation || 0}deg) ${element.flipX ? 'scaleX(-1)' : ''} ${element.flipY ? 'scaleY(-1)' : ''} ${element.transform || ''}`,
       cursor: isDragging ? 'grabbing' : 'grab',
       border: isSelected ? '2px solid #3b82f6' : '1px solid transparent',
@@ -437,7 +423,7 @@ export const DesignCanvas: React.FC<Props> = ({
         );
 
       case 'qr':
-        const qrCodeImage = generateQRCodeSVG(element.content || 'https://example.com', Math.min(element.width, element.height));
+        const qrCodeImage = generateRealQRCode(element.content || 'https://example.com', Math.min(element.width, element.height));
         
         return (
           <div
@@ -530,7 +516,7 @@ export const DesignCanvas: React.FC<Props> = ({
 
         <div
           ref={canvasRef}
-          className="relative border-2 border-gray-300 shadow-lg rounded-lg overflow-hidden"
+          className="relative border-2 border-gray-300 shadow-lg rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500"
           style={{
             width: '600px',
             height: '450px',
@@ -538,7 +524,6 @@ export const DesignCanvas: React.FC<Props> = ({
             pointerEvents: 'auto',
           }}
           onClick={handleCanvasClick}
-          onKeyDown={handleKeyDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           tabIndex={0}
@@ -573,6 +558,13 @@ export const DesignCanvas: React.FC<Props> = ({
         </button>
         <span className="text-sm text-gray-500">View</span>
       </div>
+
+      {/* Delete Key Hint */}
+      {selectedElement && (
+        <div className="mt-4 text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded">
+          Press <kbd className="bg-white px-1 border rounded">Delete</kbd> to remove selected element
+        </div>
+      )}
     </div>
   );
 };
