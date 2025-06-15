@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { DesignToolbar } from "../components/design-editor/DesignToolbar";
 import { DesignCanvas } from "../components/design-editor/DesignCanvas";
@@ -59,6 +58,10 @@ const DesignEditor = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [history, setHistory] = useState<DesignElement[][]>([[]]);
   const [historyIndex, setHistoryIndex] = useState(0);
+  
+  // 3D Model state for future extensibility
+  const [currentModelPath, setCurrentModelPath] = useState<string | null>(null);
+  const [modelType, setModelType] = useState<'procedural' | 'gltf'>('procedural');
 
   // Always use horizontal layout - no special case for text
   const useHorizontalLayout = true;
@@ -135,6 +138,12 @@ const DesignEditor = () => {
     }
   };
 
+  // Handle 3D model changes
+  const handleModelChange = (modelPath: string, newModelType: 'procedural' | 'gltf') => {
+    setCurrentModelPath(modelPath);
+    setModelType(newModelType);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Top Header */}
@@ -203,6 +212,8 @@ const DesignEditor = () => {
           setBackgroundColor={setBackgroundColor}
           threeDModel={threeDModel}
           setThreeDModel={setThreeDModel}
+          onModelChange={handleModelChange}
+          currentModelPath={currentModelPath}
         />
 
         {/* Canvas Area */}

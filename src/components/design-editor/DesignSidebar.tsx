@@ -1,11 +1,11 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Type, Image, Shapes, Palette, QrCode, Upload, Plus } from "lucide-react";
+import { Type, Image, Shapes, Palette, QrCode, Upload, Plus, Box } from "lucide-react";
 import { DesignElement } from "../../pages/DesignEditor";
+import { ModelManager } from "./ModelManager";
 
 type Props = {
   activeTab: string;
@@ -15,6 +15,8 @@ type Props = {
   setBackgroundColor: (color: string) => void;
   threeDModel: File | null;
   setThreeDModel: (file: File | null) => void;
+  onModelChange?: (modelPath: string, modelType: 'procedural' | 'gltf') => void;
+  currentModelPath?: string | null;
 };
 
 const shapes = [
@@ -41,6 +43,8 @@ export const DesignSidebar: React.FC<Props> = ({
   setBackgroundColor,
   threeDModel,
   setThreeDModel,
+  onModelChange,
+  currentModelPath,
 }) => {
   const [qrUrl, setQrUrl] = useState('https://example.com');
 
@@ -116,7 +120,7 @@ export const DesignSidebar: React.FC<Props> = ({
   return (
     <div className="w-80 bg-white border-r border-gray-200 shadow-sm">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-        <TabsList className="grid w-full grid-cols-5 m-0 rounded-none border-b">
+        <TabsList className="grid w-full grid-cols-6 m-0 rounded-none border-b">
           <TabsTrigger value="text" className="flex flex-col gap-1 py-3">
             <Type className="w-4 h-4" />
             <span className="text-xs">Text</span>
@@ -136,6 +140,10 @@ export const DesignSidebar: React.FC<Props> = ({
           <TabsTrigger value="qr" className="flex flex-col gap-1 py-3">
             <QrCode className="w-4 h-4" />
             <span className="text-xs">QR Code</span>
+          </TabsTrigger>
+          <TabsTrigger value="model" className="flex flex-col gap-1 py-3">
+            <Box className="w-4 h-4" />
+            <span className="text-xs">3D Model</span>
           </TabsTrigger>
         </TabsList>
 
@@ -316,6 +324,32 @@ export const DesignSidebar: React.FC<Props> = ({
                   <Plus className="w-5 h-5 mr-2" />
                   Generate QR Code
                 </Button>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="model" className="p-6 space-y-6 m-0">
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-4">3D Model Settings</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Customize the 3D model used for preview
+              </p>
+              
+              {onModelChange && (
+                <ModelManager
+                  onModelChange={onModelChange}
+                  currentModel={currentModelPath}
+                />
+              )}
+              
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Future Features</h4>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• Custom .glb/.gltf model support</li>
+                  <li>• Material and texture customization</li>
+                  <li>• Animation support</li>
+                  <li>• Multiple product types</li>
+                </ul>
               </div>
             </div>
           </TabsContent>
