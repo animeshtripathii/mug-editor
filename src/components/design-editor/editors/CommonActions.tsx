@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Trash2, Lock, Unlock, Eye, EyeOff, RotateCw, FlipHorizontal, FlipVertical, MoveUp, MoveDown, RotateCcw } from "lucide-react";
@@ -56,66 +55,66 @@ export const CommonActions: React.FC<Props> = ({
   return (
     <div className="space-y-4">
       {/* Transform */}
-      <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+      <div className="bg-gray-50 p-3 rounded-lg space-y-3">
         <h4 className="text-sm font-medium text-gray-700">Transform</h4>
         
-        <div className="grid grid-cols-4 gap-2">
-          <Button size="sm" variant="outline" className="h-9" onClick={rotateElementReverse}>
-            <RotateCcw className="w-4 h-4" />
+        <div className="grid grid-cols-2 gap-2">
+          <Button size="sm" variant="outline" className="h-8" onClick={rotateElementReverse}>
+            <RotateCcw className="w-3 h-3" />
           </Button>
-          <Button size="sm" variant="outline" className="h-9" onClick={rotateElement}>
-            <RotateCw className="w-4 h-4" />
+          <Button size="sm" variant="outline" className="h-8" onClick={rotateElement}>
+            <RotateCw className="w-3 h-3" />
           </Button>
-          <Button size="sm" variant="outline" className="h-9" onClick={flipHorizontal}>
-            <FlipHorizontal className="w-4 h-4" />
+          <Button size="sm" variant="outline" className="h-8" onClick={flipHorizontal}>
+            <FlipHorizontal className="w-3 h-3" />
           </Button>
-          <Button size="sm" variant="outline" className="h-9" onClick={flipVertical}>
-            <FlipVertical className="w-4 h-4" />
+          <Button size="sm" variant="outline" className="h-8" onClick={flipVertical}>
+            <FlipVertical className="w-3 h-3" />
           </Button>
         </div>
       </div>
 
       {/* Layer */}
-      <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+      <div className="bg-gray-50 p-3 rounded-lg space-y-3">
         <h4 className="text-sm font-medium text-gray-700">Layer</h4>
         
-        <div className="grid grid-cols-4 gap-2">
-          <Button size="sm" variant="outline" className="h-9" onClick={bringToFront}>
-            <MoveUp className="w-4 h-4" />
+        <div className="grid grid-cols-2 gap-2">
+          <Button size="sm" variant="outline" className="h-8" onClick={bringToFront}>
+            <MoveUp className="w-3 h-3" />
           </Button>
-          <Button size="sm" variant="outline" className="h-9" onClick={sendToBack}>
-            <MoveDown className="w-4 h-4" />
+          <Button size="sm" variant="outline" className="h-8" onClick={sendToBack}>
+            <MoveDown className="w-3 h-3" />
           </Button>
-          <Button size="sm" variant="outline" className="h-9" onClick={toggleLock}>
-            {selectedElement.locked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+          <Button size="sm" variant="outline" className="h-8" onClick={toggleLock}>
+            {selectedElement.locked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
           </Button>
-          <Button size="sm" variant="outline" className="h-9" onClick={toggleVisibility}>
-            {selectedElement.visible === false ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          <Button size="sm" variant="outline" className="h-8" onClick={toggleVisibility}>
+            {selectedElement.visible === false ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
           </Button>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+      <div className="bg-gray-50 p-3 rounded-lg space-y-3">
         <h4 className="text-sm font-medium text-gray-700">Actions</h4>
         
-        <div className="flex gap-2">
+        <div className="space-y-2">
           <Button 
             size="sm" 
             variant="outline" 
-            className="h-9 flex-1"
+            className="h-8 w-full"
             onClick={() => duplicateElement(selectedElement.id)}
           >
-            <Copy className="w-4 h-4 mr-2" />
+            <Copy className="w-3 h-3 mr-2" />
             Duplicate
           </Button>
           <Button 
             size="sm" 
             variant="outline" 
-            className="h-9 flex-1 text-red-600 hover:text-red-700"
+            className="h-8 w-full text-red-600 hover:text-red-700"
             onClick={() => deleteElement(selectedElement.id)}
           >
-            <Trash2 className="w-4 h-4 mr-2" />
+            <Trash2 className="w-3 h-3 mr-2" />
             Delete
           </Button>
         </div>

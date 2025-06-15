@@ -63,9 +63,6 @@ const DesignEditor = () => {
   const [currentModelPath, setCurrentModelPath] = useState<string | null>(null);
   const [modelType, setModelType] = useState<'procedural' | 'gltf'>('procedural');
 
-  // Always use horizontal layout - no special case for text
-  const useHorizontalLayout = true;
-
   const addElement = (element: Omit<DesignElement, 'id'>) => {
     // Ensure elements are positioned within canvas bounds (600x450)
     const canvasWidth = 600;
@@ -147,7 +144,7 @@ const DesignEditor = () => {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Top Header */}
-      <header className="bg-white border-b shadow-sm">
+      <header className="bg-white border-b shadow-sm flex-shrink-0">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-4">
             <Link to="/">
@@ -201,7 +198,7 @@ const DesignEditor = () => {
         </div>
       </header>
 
-      {/* Main Content Area - Always Horizontal Layout */}
+      {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar */}
         <DesignSidebar
@@ -217,8 +214,8 @@ const DesignEditor = () => {
         />
 
         {/* Canvas Area */}
-        <div className="flex-1 flex flex-col bg-gray-100">
-          {/* Design Toolbar */}
+        <div className="flex-1 flex flex-col bg-gray-100 min-w-0">
+          {/* Design Toolbar - Fixed Height */}
           <DesignToolbar
             selectedElement={selectedElement ? elements.find(el => el.id === selectedElement) : null}
             updateElement={updateElement}
@@ -226,8 +223,8 @@ const DesignEditor = () => {
             duplicateElement={duplicateElement}
           />
           
-          {/* Canvas Container */}
-          <div className="flex-1 flex items-center justify-center p-8 overflow-auto">
+          {/* Canvas Container - Takes remaining space */}
+          <div className="flex-1 flex items-center justify-center p-8 overflow-auto min-h-0">
             <DesignCanvas
               elements={elements}
               selectedElement={selectedElement}
